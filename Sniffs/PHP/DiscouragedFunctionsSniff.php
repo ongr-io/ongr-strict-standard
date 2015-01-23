@@ -39,7 +39,7 @@ class DiscouragedFunctionsSniff extends Generic_Sniffs_PHP_ForbiddenFunctionsSni
      *
      * @var array(string => string|null)
      */
-    protected $forbiddenFunctions = [
+    public $forbiddenFunctions = [
         'error_log' => null,
         'print_r' => null,
         'var_dump' => null,

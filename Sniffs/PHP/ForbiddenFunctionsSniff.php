@@ -42,7 +42,7 @@ class ForbiddenFunctionsSniff extends Generic_Sniffs_PHP_ForbiddenFunctionsSniff
      *
      * @var array(string => string|null)
      */
-    protected $forbiddenFunctions = [
+    public $forbiddenFunctions = [
         'sizeof' => 'count',
         'delete' => 'unset',
         'print' => 'echo',
