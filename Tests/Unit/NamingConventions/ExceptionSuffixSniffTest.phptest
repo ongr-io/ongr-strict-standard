@@ -1,0 +1,19 @@
+<?php
+
+namespace Foo;
+
+class BarException extends \Exception
+{
+}
+
+class Bar extends \Exception
+{
+}
+
+class FooException extends BarException
+{
+}
+
+class Foo extends BarException
+{
+}

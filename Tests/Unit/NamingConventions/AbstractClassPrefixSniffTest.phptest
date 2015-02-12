@@ -1,0 +1,11 @@
+<?php
+
+namespace Foo;
+
+abstract class Foo
+{
+}
+
+abstract class AbstractFoo
+{
+}
