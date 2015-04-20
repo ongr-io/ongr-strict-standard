@@ -24,7 +24,7 @@ class AbstractClassPrefixSniffTest extends AbstractSniffUnitTest
     protected function getErrorList()
     {
         return [
-            5 => 1,
+//            5 => 1,
         ];
     }
 
