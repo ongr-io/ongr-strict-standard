@@ -23,6 +23,8 @@
  <rule ref="PSR2"/>
 
  <rule ref="Squiz">
+     <!--Disabled Abstract prefix sniff, we are using deprecated ElasticsearchTestCase abstract class-->
+     <exclude name="Ongr.NamingConventions.AbstractClassPrefix"/>
 
      <!--Exclude Generic rules used by squiz-->
      <exclude name="Generic.Formatting.MultipleStatementAlignment"/>
