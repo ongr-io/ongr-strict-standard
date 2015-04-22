@@ -156,4 +156,53 @@ class FunctionCommentSniffTest
     {
         return $this->updateTypes();
     }
+
+    /**
+     * Constructor for geo sort.
+     *
+     * @param string       $field    Field name.
+     * @param array|string $location Possible types examples:
+     *                               [-70, 40]
+     *                               ["lat" : 40, "lon" : -70]
+     *                               "-70,40".
+     * @param string       $order    Order.
+     * @param string       $unit     Units for measuring the distance.
+     *     Alfa.
+     * @param string       $mode     Mode.
+     *
+     * @throws \LogicException
+     * Comment.
+     * @throws \Exception
+     */
+    public function __construct($field, $location, $order = self::ORDER_DESC, $unit = null, $mode = null)
+    {
+        $this->setLocation($location);
+        $this->setUnit($unit);
+        parent::__construct($field, $order, $mode);
+    }
+
+    /**
+     * Constructor for geo sort.
+     *
+     * @param string       $field    Field name.
+     * @param array|string $location Possible types examples:
+     *                               [-70, 40]
+     *                               ["lat" : 40, "lon" : -70]
+     *                               "-70,40".
+     * @param string       $order    Order.
+     * @param string       $unit     Units for measuring the distance.
+     * Alfa.
+     * @param string       $mode     Mode.
+     *
+     * @throws \LogicException
+     *
+     * @return
+     */
+    public function __construct($field, $location, $order = self::ORDER_DESC, $unit = null, $mode = null)
+    {
+        $this->setLocation($location);
+        $this->setUnit($unit);
+        parent::__construct($field, $order, $mode);
+        return;
+    }
 }
