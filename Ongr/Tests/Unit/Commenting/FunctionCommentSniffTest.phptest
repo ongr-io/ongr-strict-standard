@@ -161,15 +161,15 @@ class FunctionCommentSniffTest
      * Constructor for geo sort.
      *
      * @param string       $field    Field name.
+     *
      * @param array|string $location Possible types examples:
      *                               [-70, 40]
-     *                               ["lat" : 40, "lon" : -70]
+     *              ["lat" : 40, "lon" : -70]
      *                               "-70,40".
      * @param string       $order    Order.
      * @param string       $unit     Units for measuring the distance.
-     *     Alfa.
+     *                               Alfa.
      * @param string       $mode     Mode.
-     *
      * @throws \LogicException
      * Comment.
      * @throws \Exception
@@ -182,6 +182,19 @@ class FunctionCommentSniffTest
     }
 
     /**
+     * Bar.
+     *
+     * @param mixed $first  Comment is
+     *                      very long.
+     *
+     * @param mixed $second Comment.
+     */
+    protected function fooBar7($first, $second)
+    {
+        foo();
+    }
+
+    /**
      * Constructor for geo sort.
      *
      * @param string       $field    Field name.
@@ -191,10 +204,12 @@ class FunctionCommentSniffTest
      *                               "-70,40".
      * @param string       $order    Order.
      * @param string       $unit     Units for measuring the distance.
-     * Alfa.
+     *                               Alfa.
      * @param string       $mode     Mode.
      *
      * @throws \LogicException
+     *
+     * @throws \OtherException
      *
      * @return
      */

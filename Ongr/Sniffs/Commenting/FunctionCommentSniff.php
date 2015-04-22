@@ -215,7 +215,7 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
             if ($lineAbove['code'] === T_DOC_COMMENT_OPEN_TAG) {
                 return;
             }
-            $this->phpcsFile->addError($error, $tag - 5, 'LineAboveNotEmpty');
+            $this->phpcsFile->addError($error, $tag - 5, 'LineAboveIsEmpty');
         }
     }
 
@@ -223,7 +223,13 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
     {
         $error = 'Line above ' . $content . ' must not be empty';
         if ($lineAbove['code'] === T_DOC_COMMENT_STAR ) {
-            $this->phpcsFile->addError($error, $line, 'LineAboveIsEmpty');
+            $fix = $this->phpcsFile->addFixableError($error, $line, 'LineAboveIsNotEmpty');
+            if ($fix === true) {
+                $this->phpcsFile->fixer->replaceToken($line, '');
+                $this->phpcsFile->fixer->replaceToken($line-1, '');
+                $this->phpcsFile->fixer->replaceToken($line-2, '');
+                $this->phpcsFile->fixer->addNewlineBefore($line -1);
+            }
         }
     }
 
@@ -577,6 +583,20 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                                 if ($tokens[($i - 1)]['code'] === T_DOC_COMMENT_WHITESPACE) {
                                     $indent = strlen($tokens[($i - 1)]['content']);
                                 }
+                                $previousIndent = //space + '@param' + space + 'int ' + '@variable' + space
+                                    $tokens[$tag-1]['length']+
+                                    $tokens[$tag]['length']+
+                                    $tokens[$tag+1]['length']+
+                                    strlen($matches[1])+
+                                    strlen($matches[2])+
+                                    strlen($matches[3]);
+                                if ($indent != $previousIndent) {
+                                    $error = 'Expected ' . $previousIndent . ' whitespaces, but found ' . $indent;
+                                    $fix = $phpcsFile->addFixableError($error, $i, 'IncorrectIndentation');
+                                    if ($fix === true) {
+                                        $phpcsFile->fixer->replaceToken($i-1, str_repeat(' ', $previousIndent));
+                                    }
+                                }
 
                                 $comment       .= ' '.$tokens[$i]['content'];
                                 $commentLines[] = array(
@@ -587,6 +607,7 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                             }
                         }
                     } else {
+                          //We do not require comments for every parameter.
 //                        $error = 'Missing parameter comment';
 //                        $phpcsFile->addError($error, $tag, 'MissingParamComment');
 //                        $commentLines[] = array('comment' => '');
