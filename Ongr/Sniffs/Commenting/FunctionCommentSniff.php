@@ -31,6 +31,12 @@ if (class_exists('PEAR_Sniffs_Commenting_FunctionCommentSniff', true) === false)
  */
 class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting_FunctionCommentSniff
 {
+
+    /**
+     * Phpcs file.
+     */
+    private $phpcsFile;
+
     /**
      * Processes this test, when one of its tokens is encountered.
      *
@@ -42,6 +48,7 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
      */
     public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
     {
+        $this->phpcsFile = $phpcsFile;
         $tokens = $phpcsFile->getTokens();
         $find   = PHP_CodeSniffer_Tokens::$methodPrefixes;
         $find[] = T_WHITESPACE;
@@ -191,6 +198,41 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
         }//end if
     }
 
+    protected function isLineAboveEmpty($tag, $tokens, $commentStart)
+    {
+        $lineAbove = $tokens[$tag - 5];
+        $content = $tokens[$tag]['content'];
+        $error = 'Line above ' . $content . ' must be empty';
+        $sameContent = false;
+        for ($x = $tag-1; $x >= $commentStart; $x--) {
+            if ($tokens[$x]['content'] == $content) {
+                $this->isLineAboveNotEmpty($lineAbove, $content, $tag - 5);
+                $sameContent = true;
+                break;
+            }
+        }
+        if ($lineAbove['code'] !== T_DOC_COMMENT_STAR && $sameContent == false) {
+            if ($lineAbove['code'] === T_DOC_COMMENT_OPEN_TAG) {
+                return;
+            }
+            $this->phpcsFile->addError($error, $tag - 5, 'LineAboveIsEmpty');
+        }
+    }
+
+    protected function isLineAboveNotEmpty($lineAbove, $content, $line)
+    {
+        $error = 'Line above ' . $content . ' must not be empty';
+        if ($lineAbove['code'] === T_DOC_COMMENT_STAR ) {
+            $fix = $this->phpcsFile->addFixableError($error, $line, 'LineAboveIsNotEmpty');
+            if ($fix === true) {
+                $this->phpcsFile->fixer->replaceToken($line, '');
+                $this->phpcsFile->fixer->replaceToken($line-1, '');
+                $this->phpcsFile->fixer->replaceToken($line-2, '');
+                $this->phpcsFile->fixer->addNewlineBefore($line -1);
+            }
+        }
+    }
+
     /**
      * Process the return comment of this function comment.
      *
@@ -217,8 +259,8 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                     $phpcsFile->addError($error, $tag, 'DuplicateReturn');
                     return;
                 }
-
                 $return = $tag;
+                $this->isLineAboveEmpty($tag, $tokens, $commentStart);
             }
         }
 
@@ -366,6 +408,7 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                 continue;
             }
 
+            $this->isLineAboveEmpty($tag, $tokens, $commentStart);
             $exception = null;
             $comment   = null;
             if ($tokens[($tag + 2)]['code'] === T_DOC_COMMENT_STRING) {
@@ -492,6 +535,7 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                 continue;
             }
 
+            $this->isLineAboveEmpty($tag, $tokens, $commentStart);
             $type         = '';
             $typeSpace    = 0;
             $var          = '';
@@ -539,6 +583,20 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                                 if ($tokens[($i - 1)]['code'] === T_DOC_COMMENT_WHITESPACE) {
                                     $indent = strlen($tokens[($i - 1)]['content']);
                                 }
+                                $previousIndent = //space + '@param' + space + 'int ' + '@variable' + space
+                                    $tokens[$tag-1]['length']+
+                                    $tokens[$tag]['length']+
+                                    $tokens[$tag+1]['length']+
+                                    strlen($matches[1])+
+                                    strlen($matches[2])+
+                                    strlen($matches[3]);
+                                if ($indent != $previousIndent) {
+                                    $error = 'Expected ' . $previousIndent . ' whitespaces, but found ' . $indent;
+                                    $fix = $phpcsFile->addFixableError($error, $i, 'IncorrectIndentation');
+                                    if ($fix === true) {
+                                        $phpcsFile->fixer->replaceToken($i-1, str_repeat(' ', $previousIndent));
+                                    }
+                                }
 
                                 $comment       .= ' '.$tokens[$i]['content'];
                                 $commentLines[] = array(
@@ -549,6 +607,7 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                             }
                         }
                     } else {
+                          //We do not require comments for every parameter.
 //                        $error = 'Missing parameter comment';
 //                        $phpcsFile->addError($error, $tag, 'MissingParamComment');
 //                        $commentLines[] = array('comment' => '');
@@ -731,7 +790,8 @@ class Ongr_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commenting
                     $param['var_space'],
                 );
 
-                $fix = $phpcsFile->addFixableError($error, $param['tag'], 'SpacingAfterParamName', $data);
+                $fix = $phpcsFile->addFixableError($error, $param['tag'], '
+                ', $data);
                 if ($fix === true) {
                     $phpcsFile->fixer->beginChangeset();
 
